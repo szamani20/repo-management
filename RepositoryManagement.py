@@ -215,7 +215,8 @@ class RepoManagement:
             root = tree.getroot()
             for child in root.findall('testcase'):
                 if len(child) != 0:
-                    failed_tests.append('{}.{}'.format(child.attrib['classname'], child.attrib['name']))
+                    # package.address.ClassName:MethodName() ==> Assume that no arguments for @Test methods
+                    failed_tests.append('{}:{}()'.format(child.attrib['classname'], child.attrib['name']))
 
         pprint(failed_tests)
 
@@ -309,15 +310,44 @@ class RepoManagement:
         self.path_call_graph[path] = caller_callee_dict
         return caller_callee_dict
 
-    def find_method_chain_in_failing_tests(self, path):
-        failing_tests = []
+    def get_method_call_chain(self, ccd, method_name, result):
+        """
+        Given a method name and a dictionary of method caller and callee like:
+        "caller_method": ["callee_method1", "callee_method2", ...]
+        calculate the dfs of it's call graph and returns it as a list
+        :param ccd:         caller callee dictionary
+        :param method_name: method name to dfs traverse taking it as root node in call graph
+        :param result:      the result of above procedure
+        :return:            the result of above procedure
+        """
+        if method_name not in ccd:  # system and library methods are assumed to have no bugs to cause a test failure
+            return
+        if len(result) > 1 and result[-1] == result[-2]:  # handling recursive calls
+            return
+        for callee in ccd[method_name]:
+            result.append(callee)
+            self.get_method_call_chain(ccd, callee, result)
+        return result
+
+    def find_method_chain_in_failing_tests(self, cc_dict):
+        """
+        for every failing test compute the dfs traverse of it's call graph.
+        :param cc_dict: caller callee dictionary
+        :return:        A dictionary like this:
+                            {"failing_test1": ["callee_method1", "callee_method2", ...],
+                             "failing_test2": ["callee_method1", "callee_method2", ...]}
+        """
         failing_tests_result = {}  # failing_test: sequence of called methods
         with open(BASE_CHANGE_DIR.format(FAILED_TESTS), 'r') as f:
             failing_tests = f.readlines()
 
-        print(failing_tests)
+        for ft in failing_tests:
+            result = []
+            self.get_method_call_chain(cc_dict, ft, result)
+            failing_tests_result[ft] = result
 
-        # TODO: parse the output :D
+        pprint(failing_tests_result)
+        return failing_tests_result
 
 
 if __name__ == '__main__':
@@ -339,5 +369,5 @@ if __name__ == '__main__':
     # r.save_older_version_of_project(r.get_all_commits()[0], r.get_all_commits()[1])
     # r.create_jar_of_project(BASE_DIR)
     # r.create_jar_of_project(BASE_VERSION_DIR)
-    # r.create_call_graph(BASE_DIR)
-    # r.find_method_chain_in_failing_tests(BASE_DIR)
+    caller_callee_dict = r.create_call_graph(BASE_DIR)
+    r.find_method_chain_in_failing_tests(caller_callee_dict)
