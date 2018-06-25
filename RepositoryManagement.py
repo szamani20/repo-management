@@ -11,6 +11,7 @@ FAILED_TESTS = 'failed_tests.txt'
 BASE_DIR = '/home/szamani/Desktop/term8/research/repo/jgittest'
 BASE_VERSION_DIR = '/home/szamani/Desktop/term8/research/repo/jgittest-version'
 STATIC_ANALYSIS_PATH = '/home/szamani/Desktop/term8/research/java-callgraph/java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar'
+CHANGE_DISTILLER_PATH = '/home/szamani/Desktop/term8/changedistiller-jar/changedistiller/out/artifacts/changedistiller_jar/changedistiller.jar'
 JAR_PATH = 'target/repo-1.0-SNAPSHOT.jar'
 NEW = '-new'
 OLD = '-old'
@@ -349,6 +350,14 @@ class RepoManagement:
         pprint(failing_tests_result)
         return failing_tests_result
 
+    @staticmethod
+    def extract_change_between_two_files(path1, path2):
+        changes = subprocess.run(['java', '-jar', CHANGE_DISTILLER_PATH, path1, path2],
+                                 stdout=subprocess.PIPE)
+        changes = changes.stdout.decode('utf-8')
+        pprint(changes)
+        return changes
+
 
 if __name__ == '__main__':
     r = RepoManagement(BASE_DIR)
@@ -370,4 +379,18 @@ if __name__ == '__main__':
     # r.create_jar_of_project(BASE_DIR)
     # r.create_jar_of_project(BASE_VERSION_DIR)
     caller_callee_dict = r.create_call_graph(BASE_DIR)
-    r.find_method_chain_in_failing_tests(caller_callee_dict)
+    dfs_failing_test = r.find_method_chain_in_failing_tests(caller_callee_dict)  # the actual failing test
+
+    caller_callee_dict_version = r.create_call_graph(BASE_VERSION_DIR)
+    dfs_failing_test_version = r.find_method_chain_in_failing_tests(
+        caller_callee_dict_version)  # the test that used to pass
+
+    r.extract_change_between_two_files('/home/szamani/Desktop/term8/research/TemporaryFiles/src/main/java/ir/szamani/Sort-old.java',
+                                       '/home/szamani/Desktop/term8/research/TemporaryFiles/src/main/java/ir/szamani/Sort-new.java')
+
+    """
+    The main problem with change_distiller is that it only works at file level (does it?) i.e. we cannot feed it with 
+    two methods that the caller_callee_dict say that there was a change and expect any result.
+    One other option is using git diff tool or other diff tools. That could be a wise choice when the tool
+    is designed for JAVA so that it will tell us about the changes with more details.
+    """
