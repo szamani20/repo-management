@@ -3,7 +3,7 @@ from difflib import Differ
 
 from git import Repo
 
-repo = Repo('/home/szamani/Desktop/term8/research/repo')
+repo = Repo('/home/szamani/research/repo')
 commits = list(repo.iter_commits('--all'))
 
 # for entry in commits[3].tree.traverse():
