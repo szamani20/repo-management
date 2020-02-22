@@ -6,12 +6,12 @@ from difflib import Differ
 from pprint import pprint
 import subprocess
 
-BASE_CHANGE_DIR = '/home/szamani/Desktop/term8/research/TemporaryFiles/{}'
+BASE_CHANGE_DIR = '/home/szamani/research/TemporaryFiles/{}'
 FAILED_TESTS = 'failed_tests.txt'
-BASE_DIR = '/home/szamani/Desktop/term8/research/repo/jgittest'
-BASE_VERSION_DIR = '/home/szamani/Desktop/term8/research/repo/jgittest-version'
-STATIC_ANALYSIS_PATH = '/home/szamani/Desktop/term8/research/java-callgraph/java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar'
-CHANGE_DISTILLER_PATH = '/home/szamani/Desktop/term8/changedistiller-jar/changedistiller/out/artifacts/changedistiller_jar/changedistiller.jar'
+BASE_DIR = '/home/szamani/research/repo/jgittest'
+BASE_VERSION_DIR = '/home/szamani/research/repo/jgittest-version'
+STATIC_ANALYSIS_PATH = '/home/szamani/research/java-callgraph/java-callgraph/target/javacg-0.1-SNAPSHOT-static.jar'
+CHANGE_DISTILLER_PATH = '/home/szamani/changedistiller-jar/changedistiller/out/artifacts/changedistiller_jar/changedistiller.jar'
 JAR_PATH = 'target/repo-1.0-SNAPSHOT.jar'
 NEW = '-new'
 OLD = '-old'
@@ -385,8 +385,8 @@ if __name__ == '__main__':
     dfs_failing_test_version = r.find_method_chain_in_failing_tests(
         caller_callee_dict_version)  # the test that used to pass
 
-    r.extract_change_between_two_files('/home/szamani/Desktop/term8/research/TemporaryFiles/src/main/java/ir/szamani/Sort-old.java',
-                                       '/home/szamani/Desktop/term8/research/TemporaryFiles/src/main/java/ir/szamani/Sort-new.java')
+    r.extract_change_between_two_files('/home/szamani/research/TemporaryFiles/src/main/java/ir/szamani/Sort-old.java',
+                                       '/home/szamani/research/TemporaryFiles/src/main/java/ir/szamani/Sort-new.java')
 
     """
     The main problem with change_distiller is that it only works at file level (does it?) i.e. we cannot feed it with 
